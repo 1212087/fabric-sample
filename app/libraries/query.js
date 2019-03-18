@@ -143,8 +143,48 @@ async function findCar(id) {
   }
 }
 
+async function changeOwner(carId, newOwner) {
+  // A gateway defines the peers used to access Fabric networks
+  const gateway = new Gateway();
+
+  // Main try/catch block
+  try {
+
+    const identityLabel = 'Admin@org1.example.com';
+    let connectionProfile = yaml.safeLoad(fs.readFileSync(__dirname + '/network.yaml', 'utf8'));
+
+    let connectionOptions = {
+      identity: identityLabel,
+      wallet: wallet,
+      discovery: {
+        asLocalhost: true
+      }
+    };
+
+    // Connect to gateway using network.yaml file and our certificates in _idwallet directory
+    await gateway.connect(connectionProfile, connectionOptions);
+
+    // Connect to our local fabric
+    const network = await gateway.getNetwork('mychannel');
+    const contract = await network.getContract('contract');
+
+    let response = await contract.submitTransaction('changeOwner', carId, newOwner);
+
+    return JSON.parse(response.toString());
+
+  } catch (error) {
+    console.log(`Error processing transaction. ${error}`);
+    console.log(error.stack);
+  } finally {
+    // Disconnect from the gateway
+    console.log('Disconnect from Fabric gateway.');
+    gateway.disconnect();
+  }
+}
+
 module.exports = {
     main: main,
     createCar: createCar,
-    findCar: findCar
+    findCar: findCar,
+    changeOwner: changeOwner
 };

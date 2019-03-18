@@ -31,6 +31,20 @@ class MyContract extends Contract {
         let result = JSON.parse(returnAsBytes);
         return JSON.stringify(result);
     }
+
+    async changeOwner(ctx, carId, newOwner) {
+        let returnAsBytes = await ctx.stub.getState(carId);
+        let car = JSON.parse(returnAsBytes);
+        car.owner = newOwner;
+        await ctx.stub.putState(carId, Buffer.from(JSON.stringify(car)));
+        return JSON.stringify(car);
+    }
+
+    async getCar(ctx) {
+        let returnAsBytes = await ctx.stub.GetStateByRange('', '');
+        let cars = JSON.parse(returnAsBytes);
+        return JSON.stringify(cars);
+    }
 }
 
 module.exports = MyContract;
